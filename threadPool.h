@@ -26,12 +26,12 @@ auto bind_simple(F&& f, Args&&...args)
 	return std::bind(BindArgsMover<F>(std::forward<F>(f)), std::forward<Args>(args)...);
 }
 
-class GciThreadPool
+class ThreadPool
 {
 public:
-	GciThreadPool() = default;
-	GciThreadPool(GciThreadPool&&) = default;
-	~GciThreadPool() {
+	ThreadPool() = default;
+	ThreadPool(ThreadPool&&) = default;
+	~ThreadPool() {
 		if ((bool)data_) {
 			{
 				std::lock_guard<std::mutex> lk(data_->mtx_);
@@ -41,7 +41,7 @@ public:
 			data_->cond_.notify_all();
 		}
 	}
-	explicit GciThreadPool(size_t thread_count) : data_(std::make_shared<data>()) {
+	explicit ThreadPool(size_t thread_count) : data_(std::make_shared<data>()) {
 		for (size_t i = 0; i < thread_count; ++i) {
 			std::thread([data = data_] {
 				std::unique_lock<std::mutex> lk(data->mtx_);
